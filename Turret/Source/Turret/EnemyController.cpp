@@ -3,7 +3,7 @@
 #include "EnemyController.h"
 #include "Runtime/Engine/Classes/Components/BoxComponent.h"
 #include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
-
+#include "TurretGameMode.h"
 
 // Sets default values
 AEnemyController::AEnemyController()
@@ -27,6 +27,11 @@ void AEnemyController::BeginPlay()
 void AEnemyController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	FVector newLocation = GetActorLocation();
+	newLocation.X += direction.X * speed * DeltaTime;
+	newLocation.Y += direction.Y * speed * DeltaTime;
+	SetActorLocation(newLocation);
 }
 
 void AEnemyController::OnOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -35,10 +40,12 @@ void AEnemyController::OnOverlap(UPrimitiveComponent* OverlappedComp, AActor* Ot
 	{
 		OtherActor->Destroy();
 		this->Destroy();
+		((ATurretGameMode*)GetWorld()->GetAuthGameMode())->ChangeScore(100);
 	}
 	else
 	{
-		UGameplayStatics::SetGamePaused(GetWorld(), true);
+		this->Destroy();
+		((ATurretGameMode*)GetWorld()->GetAuthGameMode())->ChangeHealth(-20);
 	}
 }
 
